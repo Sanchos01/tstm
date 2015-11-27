@@ -36,15 +36,18 @@ defmodule Tstm do
 		# if state is valid
 		if predicate.(this_state) do
 			# if state changed
-			if ets_get(namespace, @ets_states) != this_state do
-				timers_key = {namespace, this_state}
-				# shift timer
-				:ok = 	case ets_get(timers_key, @ets_timers) do
-							nil -> %Tstm{prev: nil, curr: makestamp}
-							%Tstm{curr: prev_stamp} -> %Tstm{prev: prev_stamp, curr: makestamp}
-						end
-						|> ets_put(timers_key, @ets_timers)
-				:ok = 	ets_put(this_state, namespace, @ets_states)
+			case ets_get(namespace, @ets_states) do
+				{^this_state, _} -> :ok
+				{_, _} ->
+					timers_key = {namespace, this_state}
+					current_stamp = makestamp()
+					# shift timer
+					:ok = 	case ets_get(timers_key, @ets_timers) do
+								nil -> %Tstm{prev: nil, curr: makestamp}
+								%Tstm{curr: prev_stamp} -> %Tstm{prev: prev_stamp, curr: current_stamp}
+							end
+							|> ets_put(timers_key, @ets_timers)
+					:ok = 	ets_put({this_state, current_stamp}, namespace, @ets_states)
 			end
 		end
 		raw_state
@@ -53,8 +56,11 @@ defmodule Tstm do
 	@spec get(any, any, any) :: {pos_integer, pos_integer} | nil
 	def get(state1, state2, namespace) do
 		case Enum.map([state1, state2], &({namespace, &1} |> ets_get(@ets_timers))) do
-			[%Tstm{prev: t1},%Tstm{prev: t2}] when (is_integer(t1) and is_integer(t2) and (t1 > 0) and (t2 > 0)) -> {t1, t2}
-			_ -> nil
+			[%Tstm{prev: t1}, %Tstm{prev: t2}] when (is_integer(t1) and is_integer(t2) and (t1 > 0) and (t2 > 0)) ->
+
+				{t1, t2}
+			_ ->
+				nil
 		end
 	end
 
