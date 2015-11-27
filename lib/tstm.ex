@@ -50,9 +50,10 @@ defmodule Tstm do
 		raw_state
 	end
 
+	@spec get(any, any, any) :: {pos_integer, pos_integer} | nil
 	def get(state1, state2, namespace) do
 		case Enum.map([state1, state2], &({namespace, &1} |> ets_get(@ets_timers))) do
-			[%Tstm{prev: t1},%Tstm{prev: t2}] when (is_integer(t1) and is_integer(t2) and (t1 > 0) and (t2 > 0)) -> abs(t1 - t2)
+			[%Tstm{prev: t1},%Tstm{prev: t2}] when (is_integer(t1) and is_integer(t2) and (t1 > 0) and (t2 > 0)) -> {t1, t2}
 			_ -> nil
 		end
 	end
