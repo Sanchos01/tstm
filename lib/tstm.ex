@@ -39,7 +39,7 @@ defmodule Tstm do
 			# if state changed
 			case ets_get(namespace, @ets_states) do
 				{^this_state, _} -> :ok
-				{_, _} ->
+				_ ->
 					timers_key = {namespace, this_state}
 					current_stamp = makestamp()
 					# shift timer
