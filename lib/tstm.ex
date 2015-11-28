@@ -5,6 +5,7 @@ defmodule Tstm do
 	@ets_states :__tstm__states__
 	@ets_tab_specs [:public, :named_table, :ordered_set, {:write_concurrency, true}, {:read_concurrency, true}, :protected]
 
+	@type t :: %Tstm{}
 	defstruct 	curr: nil,
 				prev: nil
 
@@ -30,8 +31,8 @@ defmodule Tstm do
 	#	public
 	#
 
-	@spec set(any, (any -> any), (any -> boolean), any) :: any
-	def set(raw_state, lambda, predicate, namespace) do
+	@spec put(any, (any -> any), (any -> boolean), any) :: any
+	def put(raw_state, lambda, predicate, namespace) do
 		this_state = lambda.(raw_state)
 		# if state is valid
 		if predicate.(this_state) do
@@ -53,12 +54,12 @@ defmodule Tstm do
 		raw_state
 	end
 
-	@spec get(any, any, any) :: {pos_integer, pos_integer} | nil
+	@spec get(any, any, any) :: %{swithed: pos_integer, diff: non_neg_integer} | nil
 	def get(state1, state2, namespace) do
 		case Enum.map([state1, state2], &({namespace, &1} |> ets_get(@ets_timers))) do
 			[%Tstm{prev: t1}, %Tstm{prev: t2}] when (is_integer(t1) and is_integer(t2) and (t1 > 0) and (t2 > 0)) ->
-
-				{t1, t2}
+				{_, switched} = ets_get(namespace, @ets_states)
+				%{swithed: switched, diff: abs(t1 - t2)}
 			_ ->
 				nil
 		end
@@ -77,7 +78,7 @@ defmodule Tstm do
 			[] -> nil
 		end
 	end
-	@spec ets_put(any, any, local_ets_tab) :: :ok
+	@spec ets_put(Tstm.t | {any, pos_integer}, any, local_ets_tab) :: :ok
 	defp ets_put(val, key, tab) do
 		true = :ets.insert(tab, {key, val})
 		:ok
