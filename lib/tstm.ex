@@ -59,7 +59,7 @@ defmodule Tstm do
 		case Enum.map([state1, state2], &({namespace, &1} |> ets_get(@ets_timers))) do
 			[%Tstm{prev: t1}, %Tstm{prev: t2}] when (is_integer(t1) and is_integer(t2) and (t1 > 0) and (t2 > 0)) ->
 				{_, switched} = ets_get(namespace, @ets_states)
-				%{swithed: switched, diff: abs(t1 - t2)}
+				%{switched: switched, diff: abs(t1 - t2)}
 			_ ->
 				nil
 		end
