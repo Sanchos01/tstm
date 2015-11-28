@@ -57,7 +57,7 @@ defmodule Tstm do
 	@spec get(any, any, any) :: %{swithed: pos_integer, diff: non_neg_integer} | nil
 	def get(state1, state2, namespace) do
 		case Enum.map([state1, state2], &({namespace, &1} |> ets_get(@ets_timers))) do
-			[%Tstm{prev: t1}, %Tstm{prev: t2}] when (is_integer(t1) and is_integer(t2) and (t1 > 0) and (t2 > 0)) ->
+			[%Tstm{prev: t1}, %Tstm{curr: t2}] when (is_integer(t1) and is_integer(t2) and (t1 > 0) and (t2 > 0)) ->
 				{_, switched} = ets_get(namespace, @ets_states)
 				%{switched: switched, diff: abs(t1 - t2)}
 			_ ->
