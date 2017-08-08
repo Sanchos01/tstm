@@ -3,7 +3,7 @@ defmodule Tstm do
 
 	@ets_timers :__tstm__timers__
 	@ets_states :__tstm__states__
-	@ets_tab_specs [:public, :named_table, :ordered_set, {:write_concurrency, true}, {:read_concurrency, true}, :protected]
+	@ets_tab_specs [:public, :named_table, :set]
 
 	@type t :: %Tstm{}
 	defstruct 	curr: nil,
